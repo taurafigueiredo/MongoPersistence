@@ -52,8 +52,9 @@ namespace MongoPersistence
         {
             var collectionName = typeof(T).Name;
             var connectionString = ConfigurationManager.AppSettings["MongoConnectionString"];
+            var defaultDatabase = ConfigurationManager.AppSettings["MongoDefaultDatabase"];
             var client = new MongoClient(connectionString);
-            var db = client.GetDatabase("Tracking");
+            var db = client.GetDatabase(defaultDatabase);
 
             var collection = db.GetCollection<T>(collectionName);
 
