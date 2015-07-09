@@ -1,5 +1,10 @@
 # MongoPersistence
 
+To install MongoPersistence, run the following command in the Package Manager Console:
+```
+Install-Package MongoPersistence
+```
+
 ## 1 - Add keys on Web.config
 
 Web.config
