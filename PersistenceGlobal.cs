@@ -14,7 +14,7 @@ namespace MongoPersistence
         public static void SSH_Start()
         {
             string host = ConfigurationManager.AppSettings["MongoSSHHost"];
-            if (PersistenceGlobal.SshClient == null)
+            if (!String.IsNullOrEmpty(host) && PersistenceGlobal.SshClient == null)
             {
                 string user = ConfigurationManager.AppSettings["MongoSSHUser"];
                 string pwd = ConfigurationManager.AppSettings["MongoSSHPassword"];
