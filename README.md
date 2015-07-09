@@ -19,7 +19,7 @@ If you need to connect through SSH, add these keys on appSettings sections (like
 ```
 
 ## 2 - Create your "entity"
-You just have to inherite from Persistence<T>, where T is your entity.
+You just have to inherit from Persistence<T>, where T is your entity.
 ```
 public class Profile : Persistence<Profile>
 {
