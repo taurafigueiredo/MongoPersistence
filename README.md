@@ -15,7 +15,7 @@ Web.config
 </appSettings>
 ```
 
-If you need to connect through SSH, add these keys on appSettings sections (like above):
+If you need to connect through SSH, you need to also add 4 (four) other keys on appSettings sections:
 ```xml
 <add key="MongoSSHHost" value="ssh_host_ip" />
 <add key="MongoSSHUser" value="ssh_username" />
