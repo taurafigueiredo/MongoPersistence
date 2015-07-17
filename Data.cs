@@ -14,12 +14,18 @@ namespace MongoPersistence
         public Data()
         {
             PersistenceGlobal.SSH_Start();
+            _database = ConfigurationManager.AppSettings["MongoDefaultDatabase"];
         }
 
         public List<T> Records { get; set; }
 
-        public async Task Insert()
+        private string _database { get; set; }
+
+        public async Task Insert(string database = null)
         {
+            if (!String.IsNullOrEmpty(database))
+                _database = database;
+
             var collection = GetCollection();
             foreach (var item in Records)
             {
@@ -27,8 +33,11 @@ namespace MongoPersistence
             }
         }
 
-        public async Task Update(FilterDefinition<T> filter)
+        public async Task Update(FilterDefinition<T> filter, string database = null)
         {
+            if (!String.IsNullOrEmpty(database))
+                _database = database;
+
             var collection = GetCollection();
             foreach (var item in Records)
             {
@@ -36,8 +45,10 @@ namespace MongoPersistence
             }
         }
 
-        public async Task<List<T>> Get(FilterDefinition<T> filter)
+        public async Task<List<T>> Get(FilterDefinition<T> filter, string database = null)
         {
+            if(!String.IsNullOrEmpty(database))
+                _database = database;
 
             var collection = GetCollection();
             var cursor = collection.Find(filter);
@@ -51,10 +62,15 @@ namespace MongoPersistence
         private IMongoCollection<T> GetCollection()
         {
             var collectionName = typeof(T).Name;
-            var connectionString = ConfigurationManager.AppSettings["MongoConnectionString"];
-            var defaultDatabase = ConfigurationManager.AppSettings["MongoDefaultDatabase"];
+            var connectionString = String.Empty;
+
+            if(PersistenceGlobal.SshClient.IsConnected)
+                connectionString = "mongodb://127.0.0.1:27017";
+            else
+                connectionString = ConfigurationManager.AppSettings["MongoConnectionString"];
+
             var client = new MongoClient(connectionString);
-            var db = client.GetDatabase(defaultDatabase);
+            var db = client.GetDatabase(_database);
 
             var collection = db.GetCollection<T>(collectionName);
 

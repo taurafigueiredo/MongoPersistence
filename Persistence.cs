@@ -36,7 +36,9 @@ namespace MongoPersistence
         [JsonIgnore]
         public FilterDefinition<T> filter { get; set; }
 
-
+        [BsonIgnore]
+        [JsonIgnore]
+        public string Database { get; set; }
 
         public Persistence()
         {
@@ -49,11 +51,11 @@ namespace MongoPersistence
             if (_id != null)
             {
                 filter = filterBuilder.Eq("_id", Id);
-                await data.Update(filter);
+                await data.Update(filter,this.Database);
             }
             else
             {
-                await data.Insert();
+                await data.Insert(this.Database);
             }
         }
 
@@ -69,27 +71,27 @@ namespace MongoPersistence
         {
             _id = id;
             filter = filterBuilder.Eq("_id", Id);
-            var result = await new Data<T>().Get(filter);
+            var result = await Get(filter);
             return result;
         }
 
         public async Task<List<T>> Get(ObjectId _id)
         {
             filter = filterBuilder.Eq("_id", _id);
-            var result = await new Data<T>().Get(filter);
+            var result = await Get(filter);
             return result;
         }
 
         public async Task<List<T>> Get()
         {
             filter = new BsonDocument();
-            var result = await new Data<T>().Get(filter);
+            var result = await Get(filter);
             return result;
         }
 
         public async Task<List<T>> Get(FilterDefinition<T> _filter)
         {
-            var result = await new Data<T>().Get(_filter);
+            var result = await new Data<T>().Get(_filter, this.Database);
             return result;
         }
 
@@ -123,14 +125,14 @@ namespace MongoPersistence
             }
 
             filter = filterBuilder.And(filters);
-            var result = await new Data<T>().Get(filter);
+            var result = await Get(filter);
             return result;
         }
 
         public async Task<List<T>> Get(string key, string value)
         {
             filter = filterBuilder.Eq(key, value);
-            var result = await new Data<T>().Get(filter);
+            var result = await Get(filter);
             return result;
         }
     }

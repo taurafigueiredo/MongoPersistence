@@ -24,8 +24,7 @@ namespace MongoPersistence
                 PersistenceGlobal.SshClient.Connect();
 
                 var connData = ConfigurationManager.AppSettings["MongoConnectionString"].Replace("mongodb://", "").Split(':');
-                var connRemote = ConfigurationManager.AppSettings["MongoRemoteConnectionString"].Replace("mongodb://", "").Split(':');
-                var port = new ForwardedPortLocal(connData[0], Convert.ToUInt32(connData[1]), connRemote[0], Convert.ToUInt32(connRemote[1]));
+                var port = new ForwardedPortLocal("127.0.0.1", Convert.ToUInt32("27017"), connData[0], Convert.ToUInt32(connData[1]));
                 PersistenceGlobal.SshClient.AddForwardedPort(port);
                 port.Start();
 
@@ -33,7 +32,7 @@ namespace MongoPersistence
             }
         }
 
-        private static void SSH_Stop(object sender, EventArgs e)
+        public static void SSH_Stop(object sender, EventArgs e)
         {
             if (PersistenceGlobal.SshClient != null && PersistenceGlobal.SshClient.IsConnected)
             {
