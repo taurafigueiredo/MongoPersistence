@@ -11,22 +11,23 @@ Web.config
 ```xml
 <appSettings>
   <add key="MongoConnectionString" value="mongodb://localhost:27017" />
-  <add key="MongoDefaultDatabase" value="fitnesstracker" />
+  <add key="MongoDefaultDatabase" value="database" />
 </appSettings>
 ```
 
-If you need to connect through SSH, you need to also add 4 (four) other keys on appSettings sections:
+If you need to connect through SSH, you need to also add 3 (four) other keys on appSettings sections:
 ```xml
 <add key="MongoSSHHost" value="ssh_host_ip" />
 <add key="MongoSSHUser" value="ssh_username" />
 <add key="MongoSSHPassword" value="ssh_password" />
-<add key="MongoRemoteConnectionString" value="remote_ip:remote_port" />
 ```
 
 ## 2 - Create your "entity"
 You just have to inherit from Persistence<T>, where T is your entity.
 You can use 'dynamic' type if you are make reference to a MongoDB field which doesn't have a simple structure.
 If you want to map your .NET attribute to a MongoDB field that have a different name, you can use the BsonElement decoration property.
+
+You can also set the database where this class should persist using the "Database" property of your class.
 ```csharp
 public class Profile : Persistence<Profile>
 {
@@ -39,6 +40,11 @@ public class Profile : Persistence<Profile>
     
     [BsonElement("NameOnMongoDB")]
     public string NameOnDotNet { get; set; }
+    
+    public Profile()
+    {
+      this.Database = "DatabaseIWantToUse";
+    }
 }
 ```
 
