@@ -68,22 +68,35 @@ namespace MongoPersistence
             }
             else
             {
-                var properties = value.GetType().GetProperties();
                 var parameters = new Dictionary<string, string>();
-                //TODO: analisar encadeamento de propriedades
-                foreach (var item in properties)
-                {
-                    dynamic def = Default.GetDefault(item.PropertyType);
-                    var itemValue = item.GetValue(value);
-                    if (!object.Equals(itemValue, def))
-                    {
-                        parameters.Add(item.Name, itemValue.ToString());
-                    }
-                }
+                AppendProperties(value, parameters);
                 return await GenericPersistence.Get(parameters);
             }
 
             return new List<T>();
+        }
+
+        private static void AppendProperties(object value, Dictionary<string, string> parameters, string baseType = "")
+        {
+            var properties = value.GetType().GetProperties();
+            foreach (var item in properties)
+            {
+                dynamic def = Default.GetDefault(item.PropertyType);
+                var itemValue = item.GetValue(value);
+
+                var _baseType = String.IsNullOrEmpty(baseType) ? item.Name : (baseType + "." + item.Name);
+
+                if (!item.DeclaringType.FullName.Contains("MongoPersistence"))
+                {
+                    if (!item.PropertyType.Namespace.Equals("System") && itemValue != null)
+                        AppendProperties(itemValue, parameters, _baseType);
+                    else
+                    {
+                        if (!object.Equals(itemValue, def))
+                            parameters.Add(_baseType, itemValue.ToString());
+                    }
+                }
+            }
         }
     }
 }
