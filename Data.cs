@@ -64,7 +64,7 @@ namespace MongoPersistence
             var collectionName = typeof(T).Name;
             var connectionString = String.Empty;
 
-            if(PersistenceGlobal.SshClient.IsConnected)
+            if (PersistenceGlobal.SshClient != null && PersistenceGlobal.SshClient.IsConnected)
                 connectionString = "mongodb://127.0.0.1:27017";
             else
                 connectionString = ConfigurationManager.AppSettings["MongoConnectionString"];
