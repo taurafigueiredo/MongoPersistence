@@ -47,16 +47,34 @@ namespace MongoPersistence
 
         public async Task InsertOrUpdate()
         {
-            var data = GetDataAccess();
             if (_id != null)
             {
-                filter = filterBuilder.Eq("_id", Id);
-                await data.Update(filter,this.Database);
+                await Update();
             }
             else
             {
-                await data.Insert(this.Database);
+                await Insert();
             }
+        }
+
+        public async Task Update()
+        {
+            var data = GetDataAccess();
+            filter = filterBuilder.Eq("_id", Id);
+            await data.Update(filter, this.Database);
+        }
+
+        public async Task Delete()
+        {
+            var data = GetDataAccess();
+            filter = filterBuilder.Eq("_id", Id);
+            await data.Delete(filter, this.Database);
+        }
+
+        public async Task Insert()
+        {
+            var data = GetDataAccess();
+            await data.Insert(this.Database);
         }
 
         private Data<T> GetDataAccess()

@@ -23,40 +23,55 @@ namespace MongoPersistence
 
         public async Task Insert(string database = null)
         {
-            if (!String.IsNullOrEmpty(database))
-                _database = database;
-
-            var collection = GetCollection();
-            foreach (var item in Records)
-            {
-                await collection.InsertOneAsync(item);
-            }
+            await DoOperation(DataOperation.Insert, database);
         }
 
         public async Task Update(FilterDefinition<T> filter, string database = null)
         {
-            if (!String.IsNullOrEmpty(database))
-                _database = database;
+            await DoOperation(DataOperation.Update, filter, database);
+        }
 
-            var collection = GetCollection();
-            foreach (var item in Records)
-            {
-                await collection.ReplaceOneAsync(filter, item);
-            }
+        public async Task Delete(FilterDefinition<T> filter, string database = null)
+        {
+            await DoOperation(DataOperation.Delete, filter, database);
         }
 
         public async Task<List<T>> Get(FilterDefinition<T> filter, string database = null)
         {
-            if(!String.IsNullOrEmpty(database))
+            await DoOperation(DataOperation.Get, filter, database);
+            return Records;
+        }
+
+        private async Task DoOperation(DataOperation operation, FilterDefinition<T> filter = null, string database = null)
+        {
+            if (!String.IsNullOrEmpty(database))
                 _database = database;
 
             var collection = GetCollection();
-            var cursor = collection.Find(filter);
 
-            List<T> list = await cursor.ToListAsync<T>();
-
-
-            return list;
+            switch (operation)
+            {
+                case DataOperation.Insert:
+                    foreach (var item in Records)
+                    {
+                        await collection.InsertOneAsync(item);
+                    }
+                    break;
+                case DataOperation.Update:
+                    foreach (var item in Records)
+                    {
+                        await collection.ReplaceOneAsync(filter, item);
+                    }
+                    break;
+                case DataOperation.Delete:
+                    await collection.DeleteOneAsync(filter);
+                    break;
+                case DataOperation.Get:
+                    Records = await collection.Find(filter).ToListAsync<T>();
+                    break;
+                default:
+                    break;
+            }
         }
 
         private IMongoCollection<T> GetCollection()

@@ -48,32 +48,58 @@ namespace MongoPersistence
         {
             GenericPersistence = (Persistence<T>)Convert.ChangeType(value, typeof(T));
 
-            if (Request.GetQueryNameValuePairs().Where(c => c.Key == "Action" & c.Value == "Get").Count() == 0)
-            {
-                if (GenericPersistence._id == null)
-                {
-                    var pk = value.GetType().GetProperties().Where(c => c.CustomAttributes.Where(x => x.AttributeType.Name == "LookupKey").Count() > 0).Select(c => c).FirstOrDefault();
-
-                    if (pk != null)
-                    {
-                        List<T> actual = new List<T>();
-                        actual = await GenericPersistence.Get(pk.Name, (string)pk.GetValue(value));
-
-                        if (actual.Count > 0)
-                            GenericPersistence._id = ((Persistence<T>)Convert.ChangeType(actual[0], typeof(T)))._id;
-                    }
-                }
-
-                await GenericPersistence.InsertOrUpdate();
-            }
-            else
+            if (Request.GetQueryNameValuePairs().Where(c => c.Key == "Action" & c.Value == "Get").Count() > 0)
             {
                 var parameters = new Dictionary<string, string>();
                 AppendProperties(value, parameters);
                 return await GenericPersistence.Get(parameters);
             }
+            else
+            {
+                await FindIdByLookupKey(value);
+                await GenericPersistence.InsertOrUpdate();
+            }
 
             return new List<T>();
+        }
+
+        public virtual async Task<List<T>> Put([FromBody]T value)
+        {
+            GenericPersistence = (Persistence<T>)Convert.ChangeType(value, typeof(T));
+
+            await FindIdByLookupKey(value);
+
+            await GenericPersistence.Update();
+
+            return new List<T>();
+        }
+
+        public virtual async Task<List<T>> Delete([FromBody]T value)
+        {
+            GenericPersistence = (Persistence<T>)Convert.ChangeType(value, typeof(T));
+
+            await FindIdByLookupKey(value);
+
+            await GenericPersistence.Delete();
+
+            return new List<T>();
+        }
+
+        private async Task FindIdByLookupKey(T value)
+        {
+            if (GenericPersistence._id == null)
+            {
+                var pk = value.GetType().GetProperties().Where(c => c.CustomAttributes.Where(x => x.AttributeType.Name == "LookupKey").Count() > 0).Select(c => c).FirstOrDefault();
+
+                if (pk != null)
+                {
+                    List<T> actual = new List<T>();
+                    actual = await GenericPersistence.Get(pk.Name, (string)pk.GetValue(value));
+
+                    if (actual.Count > 0)
+                        GenericPersistence._id = ((Persistence<T>)Convert.ChangeType(actual[0], typeof(T)))._id;
+                }
+            }
         }
 
         private static void AppendProperties(object value, Dictionary<string, string> parameters, string baseType = "")
