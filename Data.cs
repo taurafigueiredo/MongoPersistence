@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using Renci.SshNet;
 using System;
 using System.Collections.Generic;
@@ -42,12 +43,17 @@ namespace MongoPersistence
             return Records;
         }
 
+        //public async Task RunCommand(string query, string database = null)
+        //{
+        //    var db = GetDatabase(database);
+        //    var command = new JsonCommand<BsonDocument>(query);
+        //    var result = await db.RunCommandAsync(command);
+        //    var teste = "a";
+        //}
+
         private async Task DoOperation(DataOperation operation, FilterDefinition<T> filter = null, string database = null)
         {
-            if (!String.IsNullOrEmpty(database))
-                _database = database;
-
-            var collection = GetCollection();
+            var collection = GetCollection(database);
 
             switch (operation)
             {
@@ -74,9 +80,20 @@ namespace MongoPersistence
             }
         }
 
-        private IMongoCollection<T> GetCollection()
+        private IMongoCollection<T> GetCollection(string database = null)
         {
             var collectionName = typeof(T).Name;
+            var db = GetDatabase(database);
+
+            var collection = db.GetCollection<T>(collectionName);
+            return collection;
+        }
+
+        private IMongoDatabase GetDatabase(string database = null)
+        {
+            if (!String.IsNullOrEmpty(database))
+                _database = database;
+
             var connectionString = String.Empty;
 
             if (PersistenceGlobal.SshClient != null && PersistenceGlobal.SshClient.IsConnected)
@@ -86,10 +103,7 @@ namespace MongoPersistence
 
             var client = new MongoClient(connectionString);
             var db = client.GetDatabase(_database);
-
-            var collection = db.GetCollection<T>(collectionName);
-
-            return collection;
+            return db;
         }
     }
 }
