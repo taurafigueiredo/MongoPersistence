@@ -74,6 +74,27 @@ namespace MongoPersistence
             return new List<T>();
         }
 
+        public virtual async Task<List<T>> Put(string id, [FromBody]T value)
+        {
+            GenericPersistence = (Persistence<T>)Convert.ChangeType(value, typeof(T));
+            GenericPersistence._id = id;
+
+            await GenericPersistence.Update();
+
+            return new List<T>();
+        }
+
+        public virtual async Task<List<T>> Delete(string id)
+        {
+            //id = Base64.Decode(id);
+            var list = await GenericPersistence.Get(id);
+            var item = list.First();
+            GenericPersistence = (Persistence<T>)Convert.ChangeType(item, typeof(T));
+            await GenericPersistence.Delete();
+
+            return new List<T>();
+        }
+
         public virtual async Task<List<T>> Delete([FromBody]T value)
         {
             GenericPersistence = (Persistence<T>)Convert.ChangeType(value, typeof(T));
