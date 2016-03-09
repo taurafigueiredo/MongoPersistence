@@ -40,6 +40,10 @@ namespace MongoPersistence
         [JsonIgnore]
         public string Database { get; set; }
 
+        [BsonIgnore]
+        [JsonIgnore]
+        public string CollectionName { get; set; }
+
         public Persistence()
         {
             if (filterBuilder == null) filterBuilder = Builders<T>.Filter;
@@ -51,11 +55,11 @@ namespace MongoPersistence
             if (_id != null)
             {
                 filter = filterBuilder.Eq("_id", Id);
-                await data.Update(filter,this.Database);
+                await data.Update(filter,this.Database, this.CollectionName);
             }
             else
             {
-                await data.Insert(this.Database);
+                await data.Insert(this.Database, this.CollectionName);
             }
         }
 
@@ -91,7 +95,7 @@ namespace MongoPersistence
 
         public async Task<List<T>> Get(FilterDefinition<T> _filter)
         {
-            var result = await new Data<T>().Get(_filter, this.Database);
+            var result = await new Data<T>().Get(_filter, this.Database, this.CollectionName);
             return result;
         }
 

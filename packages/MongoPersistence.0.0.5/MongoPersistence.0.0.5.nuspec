@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>MongoPersistence</id>
+    <version>0.0.5</version>
+    <title>MongoPersistence</title>
+    <authors>Taurã Figueiredo</authors>
+    <owners>Taurã Figueiredo</owners>
+    <projectUrl>https://github.com/taurafigueiredo/MongoPersistence</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>[Beta] A simplified way to use MongoDB to data persistence.</description>
+    <dependencies>
+      <dependency id="Newtonsoft.Json" version="7.0.1" />
+      <dependency id="MongoDB.Driver" version="2.0.1" />
+      <dependency id="Microsoft.AspNet.WebApi.WebHost" version="5.2.3" />
+    </dependencies>
+  </metadata>
+</package>

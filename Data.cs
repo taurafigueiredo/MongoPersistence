@@ -15,16 +15,26 @@ namespace MongoPersistence
         {
             PersistenceGlobal.SSH_Start();
             _database = ConfigurationManager.AppSettings["MongoDefaultDatabase"];
+            _collectionName = typeof(T).Name;
         }
 
         public List<T> Records { get; set; }
 
         private string _database { get; set; }
+        private string _collectionName { get; set; }
 
-        public async Task Insert(string database = null)
+        private void UpdatePrivateProperties(string database, string collectionName)
         {
             if (!String.IsNullOrEmpty(database))
                 _database = database;
+
+            if (!String.IsNullOrEmpty(collectionName))
+                _collectionName = collectionName;
+        }
+
+        public async Task Insert(string database = null, string collectionName = null)
+        {
+            UpdatePrivateProperties(database, collectionName);
 
             var collection = GetCollection();
             foreach (var item in Records)
@@ -33,10 +43,9 @@ namespace MongoPersistence
             }
         }
 
-        public async Task Update(FilterDefinition<T> filter, string database = null)
+        public async Task Update(FilterDefinition<T> filter, string database = null, string collectionName = null)
         {
-            if (!String.IsNullOrEmpty(database))
-                _database = database;
+            UpdatePrivateProperties(database, collectionName);
 
             var collection = GetCollection();
             foreach (var item in Records)
@@ -45,23 +54,20 @@ namespace MongoPersistence
             }
         }
 
-        public async Task<List<T>> Get(FilterDefinition<T> filter, string database = null)
+        public async Task<List<T>> Get(FilterDefinition<T> filter, string database = null, string collectionName = null)
         {
-            if(!String.IsNullOrEmpty(database))
-                _database = database;
+            UpdatePrivateProperties(database, collectionName);
 
             var collection = GetCollection();
             var cursor = collection.Find(filter);
-
+            
             List<T> list = await cursor.ToListAsync<T>();
-
 
             return list;
         }
 
         private IMongoCollection<T> GetCollection()
         {
-            var collectionName = typeof(T).Name;
             var connectionString = String.Empty;
 
             if (PersistenceGlobal.SshClient != null && PersistenceGlobal.SshClient.IsConnected)
@@ -72,7 +78,7 @@ namespace MongoPersistence
             var client = new MongoClient(connectionString);
             var db = client.GetDatabase(_database);
 
-            var collection = db.GetCollection<T>(collectionName);
+            var collection = db.GetCollection<T>(_collectionName);
 
             return collection;
         }
